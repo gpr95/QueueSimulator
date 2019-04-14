@@ -5,24 +5,24 @@ package mm1.simulator
 
 class App {
     String getGreeting() {
-        return 'Hello world.'
+        return 'MM1 simulator starting...'
     }
 
-    String readProperties() {
+    Properties readProperties() {
         Properties properties = new Properties()
         File propertiesFile = new File(getClass().getResource('/user-input.properties').toURI())
         propertiesFile.withInputStream {
             properties.load(it)
         }
 
-        assert properties.lambda == '1'
-        println properties.lambda
-        assert properties.mu == '2'
-        println properties.mu
+        properties.each { println "$it.key -> $it.value" }
+
+        return properties
     }
 
     static void main(String[] args) {
         println new App().greeting
-        new App().readProperties()
+        Simulator simulation = new Simulator(new App().readProperties())
+        simulation.simulate()
     }
 }
