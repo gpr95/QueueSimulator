@@ -15,11 +15,10 @@ class Simulator {
     }
 
     void simulate() {
+        Poisson timeToDie = new Poisson(seed, lambda)
         0.upto(probes, {
-            Poisson timeToDie = new Poisson(seed, lambda)
-
             this.queue.addEvent(timeToDie.getRandomArrival(), EventType.ARRIVAL)
-            this.queue.consumeEvent()
+            this.queue.consumeEvent(new Poisson(seed, lambda).getRandomArrival())
         })
     }
 
@@ -28,6 +27,7 @@ class Simulator {
 
 class Queue {
     List<Event> eventList
+    Double previousEventTime
 
     Queue(Double initTime) {
         eventList = new LinkedList<>()
@@ -38,13 +38,20 @@ class Queue {
         eventList.add(new Event(time, type))
     }
 
-    Event consumeEvent() {
+    Event consumeEvent(Double nextEventArrivalTime) {
         if(!eventList.isEmpty()) {
             Event event = eventList.first()
+            process(event)
+            previousEventTime = event.timeToStart
             eventList.remove(0)
+            addEvent(nextEventArrivalTime, EventType.ARRIVAL)
             return event
         }
         else return null
+    }
+
+    void process(Event event) {
+
     }
 
     Boolean isEmpty() {
@@ -52,17 +59,42 @@ class Queue {
     }
 }
 
-class Event {
-    Double time
+class Event implements Comparable<Event>{
+    Double timeToStart
+    Double duration
     EventType type
 
-    Event(Double time, EventType type) {
-        this.time = time
+    Event(Double timeToStart, EventType type) {
+        this.timeToStart = timeToStart
         this.type = type
+    }
+
+    Event(Double timeToStart, EventType type, Double duration) {
+        this(timeToStart, type)
+        this.duration = duration
+    }
+
+
+    @Override int compareTo(Event event) {
+        if(this.timeToStart < event.timeToStart)
+            return -1
+        else if(this.timeToStart > event.timeToStart)
+            return 1
+        else return 0
     }
 }
 
+class Result {
+    Integer numberOfArrivals = 0;
+    Integer numberOfDepartures = 0;
+    Double averageNumberInSystem = 0;
+    Double simulationTime = 0;
+    Double averageTimeToService = 0;
+    Double averageEventTime = 0;
+    Double averageNumberOfWaitingTasks = 0;
+}
+
 enum EventType {
-    ARRIVAL
+    ARRIVAL, DEPARTURE
 }
 
