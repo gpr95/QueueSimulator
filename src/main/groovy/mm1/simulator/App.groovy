@@ -26,8 +26,9 @@ class App {
         def lambda = (Double) properties.lambda
         def mu = (Double) properties.mu
         def probes = properties.probes as Integer
+        def seed = properties.seed as Integer
 
-        Simulator simulation = new Simulator(lambda, mu, probes)
+        Simulator simulation = new Simulator(lambda, mu, probes, seed)
         simulation.simulate()
     }
 }
