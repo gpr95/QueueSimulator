@@ -8,7 +8,7 @@ class Simulator {
     Simulator(Properties properties) {
         lambda = (Double) properties.lambda
         mu = (Double) properties.mu
-        probes = (Integer) properties.probes
+        probes = properties.probes as Integer
         queue = []
     }
 
