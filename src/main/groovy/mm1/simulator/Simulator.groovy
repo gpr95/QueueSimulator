@@ -5,23 +5,23 @@ class Simulator {
     Double mu
     Integer probes
     def queue
-    Simulator(Properties properties) {
-        lambda = (Double) properties.lambda
-        mu = (Double) properties.mu
-        probes = properties.probes as Integer
-        queue = []
+    Simulator(Double lambda, Double mu, Integer probes) {
+        this.lambda = lambda
+        this.mu = mu
+        this.probes = probes
+        this.queue = []
     }
-
 
     void addToQueue(Double timeToDie) {
         queue << timeToDie
     }
+
     void simulate() {
         0.upto(probes, {
             Poisson timeToDie = new Poisson(lambda)
 
             if(!queue.isEmpty()) {
-                queue << timeToDie
+                this.addToQueue(timeToDie)
             }
         })
     }

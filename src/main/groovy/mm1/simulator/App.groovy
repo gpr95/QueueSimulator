@@ -22,7 +22,12 @@ class App {
 
     static void main(String[] args) {
         println new App().greeting
-        Simulator simulation = new Simulator(new App().readProperties())
+        Properties properties = new App().readProperties()
+        def lambda = (Double) properties.lambda
+        def mu = (Double) properties.mu
+        def probes = properties.probes as Integer
+
+        Simulator simulation = new Simulator(lambda, mu, probes)
         simulation.simulate()
     }
 }
