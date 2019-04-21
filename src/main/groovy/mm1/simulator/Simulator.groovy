@@ -1,140 +1,134 @@
 package mm1.simulator
 
+
 class Simulator {
     Double lambda
     Double mu
     Integer probes
     Integer seed
+    Queue queue
+    System system
+
+    // Statistics vars
     Integer eventsInSystem
     Integer eventsInQueue
 
-    Double timeInQueue
     Double timeInSystem
+    Double timeInQueue
 
 
-    Queue queue
-    System system
 
     Simulator(Double lambda, Double mu, Integer probes, Integer seed) {
         this.lambda = lambda
         this.mu = mu
         this.probes = probes
         this.seed = seed
-        this.system = new System(mu, seed)
-        this.queue = new Queue(lambda, seed)
+
         eventsInSystem = 0
-        eventsInQueue = 1
+        eventsInQueue = 3
         timeInSystem = 0
         timeInQueue = 0
     }
 
     void simulate() {
         // Single event is generated in queue constructor
-        Queue queue = new Queue(lambda, seed)
-        System system = new System(mu, seed)
+        this.queue = new Queue(this.lambda, this.seed)
+        this.system = new System(this.mu, this.seed)
 
-        0.upto(probes, {
-            // Single event is removed from queue in consumer,
-            Event event = queue.consumeEvent()
+        for(int i = 0; i < this.probes; i++) {
+            println("Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem)
+            // Simulate time
+            queue.tickOfTheClock()
 
-            //
+            // If system is empty consume directly to the system
+            if(this.eventsInSystem == 0) {
+                // Single event is removed from queue, single event is added to queue
+                Event eventInQueue = queue.consumeEvent()
+                // Queue event consumption add new event to the system
+                Event eventInSystem = consume(eventInQueue, system, queue)
+                system.addEvent(eventInSystem)
+            }
+            // If system is busy just add event to queue
+            else {
+                // Simulate time
+                system.tickOfTheClock()
+                Event systemEvent = system.eventList.first()
+                if (system.clock > systemEvent.timeToStart) {
+                    println("consuming system event")
+                    consume(systemEvent, system, queue)
+                }
 
-            println(event.type)
-            println(event.timeToStart)
-            consume(event, system, queue)
-
-            //
-
-            Event systemEvent = system.consumeEvent()
-
-            //
-
-            println(event.type)
-            println(event.timeToStart)
-            consume(event, system, queue)
-
-            //
-
-            queue.addEvent(queue.generateEvent())
-        })
+                // Single event is added to queue
+                this.eventsInQueue++
+                queue.addEvent(queue.generateEvent())
+            }
+        }
     }
 
-    void consume(Event event, System system, Queue queue) {
-        if(!event?.timeToStart)
+    Event consume(Event event, System system, Queue queue) {
+        if(event == null)
             return
-        system.decreaseTimeRemainingToRemoveFromList(Math.abs(event.timeToStart - system.previousEventTime))
-        queue.decreaseTimeRemainingToRemoveFromList(Math.abs(event.timeToStart - queue.previousEventTime))
-
         switch(event.type) {
             case EventType.QUEUE:
-                this.eventsInQueue--
-                this.eventsInSystem++
-
-                Event eventToSystem = system.generateEvent()
-                this.timeInSystem += eventToSystem.timeToStart
-                system.addEvent(eventToSystem)
+                if(this.eventsInSystem == 0) {
+                    queue.clock -= event.timeToStart
+                    this.eventsInQueue--
+                    this.eventsInSystem++
+                    Event eventToSystem = system.generateEvent()
+                    event = eventToSystem
+                }
                 break
             case EventType.SYSTEM:
+                system.clock -= event.timeToStart
+                system.consumeEvent()
                 this.eventsInSystem--
                 break
         }
+
+        return event
     }
+
+
 
 }
 
 
 
-class EventConsumer {
+abstract class EventConsumer {
     List<Event> eventList
     Double previousEventTime
     Integer seed
     Double poissonParameter
-    Double timeRemainingToRemoveFromList
     Random generator
 
+    Double clock
+    Random clockGenerator
     EventConsumer(Integer seed) {
-        generator = new Random(seed)
+        this.generator = new Random(seed)
+        this.clockGenerator = new Random()
+        clock = 0.0
     }
 
     void addEvent(Event event) {
-        boolean success = false
-
-        for(Event oldEvent : eventList) {
-            if(oldEvent > event) {
-                eventList.add(eventList.indexOf(oldEvent), event)
-                success = true
-                break
-            }
-        }
-
-        // Add to the end if time to start is the longest
-        if(!success)
-            eventList.add(event)
+        eventList.add(event)
+        eventList.sort()
     }
 
-    Event generateEvent() {
-        def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
-        return new Event(randomTime, EventType.QUEUE)
-    }
+    abstract Event generateEvent()
 
     Event consumeEvent() {
         if(!eventList.isEmpty()) {
             Event event = eventList.first()
-            previousEventTime = event.timeToStart
-            eventList.remove(0)
+            this.previousEventTime = event.timeToStart
+            this.eventList.remove(0)
+
             return event
         }
         else return null
     }
 
-    Boolean isEmpty() {
-        return eventList.isEmpty()
-    }
-
-    void decreaseTimeRemainingToRemoveFromList(Double time) {
-        this.timeRemainingToRemoveFromList -= time
-        if(this.timeRemainingToRemoveFromList < 0)
-            this.timeRemainingToRemoveFromList = 0
+    void tickOfTheClock() {
+        this.clock += Math.log((Double) 1.0 - this.clockGenerator.nextDouble())/-this.poissonParameter
     }
 }
 
@@ -146,9 +140,29 @@ class Queue extends EventConsumer{
         this.poissonParameter = lambda
         this.seed = seed
         this.previousEventTime = 0
-        this.timeRemainingToRemoveFromList = 0
 
         addEvent(generateEvent())
+        addEvent(generateEvent())
+        addEvent(generateEvent())
+    }
+
+    @Override
+    Event consumeEvent() {
+        if(!eventList.isEmpty()) {
+            Event event = eventList.first()
+            this.previousEventTime = event.timeToStart
+            this.eventList.remove(0)
+            addEvent(generateEvent())
+
+            return event
+        }
+        else return null
+    }
+
+    @Override
+    Event generateEvent() {
+        def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
+        return new Event(randomTime, EventType.QUEUE)
     }
 }
 
@@ -159,25 +173,23 @@ class System extends EventConsumer{
         this.poissonParameter = mu
         this.seed = seed
         this.previousEventTime = 0
-        this.timeRemainingToRemoveFromList = 0
+    }
+
+    @Override
+    Event generateEvent() {
+        def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
+        return new Event(randomTime, EventType.SYSTEM)
     }
 }
 
 class Event implements Comparable<Event>{
     Double timeToStart
-    Double duration
     EventType type
 
     Event(Double timeToStart, EventType type) {
         this.timeToStart = timeToStart
         this.type = type
     }
-
-    Event(Double timeToStart, EventType type, Double duration) {
-        this(timeToStart, type)
-        this.duration = duration
-    }
-
 
     @Override int compareTo(Event event) {
         if(this.timeToStart < event.timeToStart)
