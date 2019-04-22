@@ -23,12 +23,13 @@ class App {
     static void main(String[] args) {
         println new App().greeting
         Properties properties = new App().readProperties()
-        def lambda = (Double) properties.lambda
-        def mu = (Double) properties.mu
-        def probes = properties.probes as Integer
-        def seed = properties.seed as Integer
+        Simulator simulation = new Simulator(
+                (Double) properties.lambda,
+                (Double) properties.mu,
+                properties.probes as Integer,
+                properties.seed as Integer
+        )
 
-        Simulator simulation = new Simulator(lambda, mu, probes, seed)
         simulation.simulate()
     }
 }

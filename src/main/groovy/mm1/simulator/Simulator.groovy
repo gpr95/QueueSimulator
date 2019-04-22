@@ -1,6 +1,8 @@
 package mm1.simulator
 
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class Simulator {
     Double lambda
     Double mu
@@ -30,66 +32,66 @@ class Simulator {
         timeInQueue = 0
     }
 
+
     void simulate() {
         // Single event is generated in queue constructor
         this.queue = new Queue(this.lambda, this.seed)
         this.system = new System(this.mu, this.seed)
 
         for(int i = 0; i < this.probes; i++) {
-            println("Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem)
-            // Simulate time
-            queue.tickOfTheClock()
+            log.debug "Real events in queue: " + this.queue.eventList.size() + "; Real events in system: " + this.system.eventList.size()
+            log.debug "Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem
 
-            // If system is empty consume directly to the system
-            if(this.eventsInSystem == 0) {
-                // Single event is removed from queue, single event is added to queue
-                Event eventInQueue = queue.consumeEvent()
-                // Queue event consumption add new event to the system
-                Event eventInSystem = consume(eventInQueue, system, queue)
-                system.addEvent(eventInSystem)
-            }
-            // If system is busy just add event to queue
-            else {
-                // Simulate time
-                system.tickOfTheClock()
-                Event systemEvent = system.eventList.first()
-                if (system.clock > systemEvent.timeToStart) {
-                    println("consuming system event")
-                    consume(systemEvent, system, queue)
+            // Get event from queue and put to the system
+            if(system.isEmpty()) {
+                log.debug "System is empty"
+                if(queue.readyToConsume()) {
+                    log.debug "Queue ready to consume"
+
+                    // Single event is removed from queue, single event is added to queue
+                    this.eventsInQueue++
+                    Event eventInQueue = queue.consumeEvent()
+                    // Queue event consumption add new event to the system
+                    Event eventInSystem = consume(eventInQueue)
+                    system.addEvent(eventInSystem)
                 }
-
-                // Single event is added to queue
-                this.eventsInQueue++
-                queue.addEvent(queue.generateEvent())
             }
+
+            // Consume event in system
+            if(system.isConsuming()) {
+                log.debug "System is consuming"
+                if(system.readyToConsume()) {
+                    log.debug "System ready to consume"
+                    consume(system.eventList.first())
+                }
+            }
+
+            // Simulate time of queue and system
+            queue.tickOfTheClock()
+            system.tickOfTheClock()
         }
     }
 
-    Event consume(Event event, System system, Queue queue) {
-        if(event == null)
-            return
-        switch(event.type) {
+    Event consume(Event event) {
+        switch(event?.type) {
             case EventType.QUEUE:
                 if(this.eventsInSystem == 0) {
-                    queue.clock -= event.timeToStart
+                    this.queue.clock -= event.timeToStart
                     this.eventsInQueue--
                     this.eventsInSystem++
-                    Event eventToSystem = system.generateEvent()
+                    Event eventToSystem = this.system.generateEvent()
                     event = eventToSystem
                 }
                 break
             case EventType.SYSTEM:
-                system.clock -= event.timeToStart
-                system.consumeEvent()
+                this.system.clock -= event.timeToStart
                 this.eventsInSystem--
+                event = this.system.consumeEvent()
                 break
         }
 
         return event
     }
-
-
-
 }
 
 
@@ -129,6 +131,10 @@ abstract class EventConsumer {
 
     void tickOfTheClock() {
         this.clock += Math.log((Double) 1.0 - this.clockGenerator.nextDouble())/-this.poissonParameter
+    }
+
+    Boolean readyToConsume() {
+        return this.clock > this.eventList.first().timeToStart
     }
 }
 
@@ -180,6 +186,16 @@ class System extends EventConsumer{
         def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
         return new Event(randomTime, EventType.SYSTEM)
     }
+
+    Boolean isConsuming() {
+        return this.eventList.size() > 0
+    }
+
+    Boolean isEmpty() {
+        return this.eventList.size() == 0
+    }
+
+
 }
 
 class Event implements Comparable<Event>{

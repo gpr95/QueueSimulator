@@ -11,5 +11,11 @@ by a Poisson process and job service times have an exponential distribution.
 
 ## Usage
 ```$xslt
+> gradle run -DlogLevel=DEBUG
+```
+
+OR
+
+```$xslt
 > gradle run
 ```
