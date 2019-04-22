@@ -20,7 +20,6 @@ class Simulator {
     Double timeInQueue
 
 
-
     Simulator(Double lambda, Double mu, Integer probes, Integer seed) {
         this.lambda = lambda
         this.mu = mu
@@ -36,34 +35,35 @@ class Simulator {
 
     void simulate() {
         // Single event is generated in queue constructor
-        this.queue = new Queue(this.lambda, this.seed)
+        this.queue = new Queue(this.lambda, this.seed, 10)
+        // System is empty by default
         this.system = new System(this.mu, this.seed)
 
-        for(int i = 0; i < this.probes; i++) {
+        for (int i = 0; i < this.probes; i++) {
             log.debug "Real events in queue: " + this.queue.eventList.size() + "; Real events in system: " + this.system.eventList.size()
             log.debug "Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem
 
             // Get event from queue and put to the system
-            if(system.isEmpty()) {
+            if (system.isEmpty()) {
                 log.debug "System is empty"
-                // if clock > timeToStart
-                if(queue.readyToConsume()) {
+                // to simulate queue delay: if clock > timeToStart
+                if (queue.readyToConsume()) {
                     log.debug "Queue ready to consume"
 
-                    // Single event is removed from queue, single event is added to queue
-                    this.eventsInQueue++
-                    Event eventInQueue = queue.consumeEvent()
+                    // Single event is removed from queue
+                    this.eventsInQueue--
+                    Event eventFromQueue = queue.pop()
                     // Queue event consumption add new event to the system
-                    Event eventInSystem = consume(eventInQueue)
+                    Event eventInSystem = consume(eventFromQueue)
                     system.addEvent(eventInSystem)
                 }
             }
 
             // Consume event in system if there is any event inside
-            if(system.isConsuming()) {
+            if (system.isConsuming()) {
                 log.debug "System is consuming"
                 // if clock > timeToStart
-                if(system.readyToConsume()) {
+                if (system.readyToConsume()) {
                     log.debug "System ready to consume"
                     consume(system.eventList.first())
                 }
@@ -76,9 +76,10 @@ class Simulator {
     }
 
     Event consume(Event event) {
-        switch(event?.type) {
+        switch (event?.type) {
             case EventType.QUEUE:
-                if(this.eventsInSystem == 0) {
+                if (this.eventsInSystem == 0) {
+                    // Scenario when event from queue need to be added to system
                     this.queue.clock -= event.timeToStart
                     this.eventsInQueue--
                     this.eventsInSystem++
@@ -87,9 +88,10 @@ class Simulator {
                 }
                 break
             case EventType.SYSTEM:
+                // Scenario when event from system could be removed
                 this.system.clock -= event.timeToStart
                 this.eventsInSystem--
-                event = this.system.consumeEvent()
+                event = this.system.pop()
                 break
         }
 

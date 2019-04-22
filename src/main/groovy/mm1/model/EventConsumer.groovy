@@ -22,12 +22,11 @@ abstract class EventConsumer {
 
     abstract Event generateEvent()
 
-    Event consumeEvent() {
+    Event pop() {
         if(!eventList.isEmpty()) {
             Event event = eventList.first()
             this.previousEventTime = event.timeToStart
             this.eventList.remove(0)
-
             return event
         }
         else return null
@@ -38,7 +37,10 @@ abstract class EventConsumer {
     }
 
     Boolean readyToConsume() {
-        return this.clock > this.eventList.first().timeToStart
+        if(!this.eventList && !this.eventList.isEmpty())
+            return this.clock > this.eventList.first().timeToStart
+        else
+            return true
     }
 
     Boolean isEmpty() {

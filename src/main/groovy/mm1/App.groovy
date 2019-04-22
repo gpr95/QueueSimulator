@@ -10,9 +10,9 @@ class App {
         return 'MM1 simulator starting...'
     }
 
-    Properties readProperties() {
+    Properties readProperties(String fileName) {
         Properties properties = new Properties()
-        File propertiesFile = new File(getClass().getResource('/user-input.properties').toURI())
+        File propertiesFile = new File(getClass().getResource(fileName).toURI())
         propertiesFile.withInputStream {
             properties.load(it)
         }
@@ -24,14 +24,16 @@ class App {
 
     static void main(String[] args) {
         println new App().greeting
-        Properties properties = new App().readProperties()
+        // Read properties from main/groovy/resources/user-input.properties
+        Properties properties = new App().readProperties('/user-input.properties')
+
+        // Run MM1 simulation
         Simulator simulation = new Simulator(
                 (Double) properties.lambda,
                 (Double) properties.mu,
                 properties.probes as Integer,
                 properties.seed as Integer
         )
-
         simulation.simulate()
     }
 }
