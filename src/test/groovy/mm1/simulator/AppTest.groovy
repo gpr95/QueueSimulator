@@ -3,6 +3,7 @@
  */
 package mm1.simulator
 
+import mm1.App
 import spock.lang.Specification
 
 class AppTest extends Specification {

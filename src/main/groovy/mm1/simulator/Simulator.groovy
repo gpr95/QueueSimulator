@@ -1,6 +1,7 @@
 package mm1.simulator
 
 import groovy.util.logging.Slf4j
+import mm1.model.*
 
 @Slf4j
 class Simulator {
@@ -45,6 +46,7 @@ class Simulator {
             // Get event from queue and put to the system
             if(system.isEmpty()) {
                 log.debug "System is empty"
+                // if clock > timeToStart
                 if(queue.readyToConsume()) {
                     log.debug "Queue ready to consume"
 
@@ -57,9 +59,10 @@ class Simulator {
                 }
             }
 
-            // Consume event in system
+            // Consume event in system if there is any event inside
             if(system.isConsuming()) {
                 log.debug "System is consuming"
+                // if clock > timeToStart
                 if(system.readyToConsume()) {
                     log.debug "System ready to consume"
                     consume(system.eventList.first())
@@ -96,127 +99,10 @@ class Simulator {
 
 
 
-abstract class EventConsumer {
-    List<Event> eventList
-    Double previousEventTime
-    Integer seed
-    Double poissonParameter
-    Random generator
-
-    Double clock
-    Random clockGenerator
-    EventConsumer(Integer seed) {
-        this.generator = new Random(seed)
-        this.clockGenerator = new Random()
-        clock = 0.0
-    }
-
-    void addEvent(Event event) {
-        eventList.add(event)
-        eventList.sort()
-    }
-
-    abstract Event generateEvent()
-
-    Event consumeEvent() {
-        if(!eventList.isEmpty()) {
-            Event event = eventList.first()
-            this.previousEventTime = event.timeToStart
-            this.eventList.remove(0)
-
-            return event
-        }
-        else return null
-    }
-
-    void tickOfTheClock() {
-        this.clock += Math.log((Double) 1.0 - this.clockGenerator.nextDouble())/-this.poissonParameter
-    }
-
-    Boolean readyToConsume() {
-        return this.clock > this.eventList.first().timeToStart
-    }
-}
 
 
-class Queue extends EventConsumer{
-    Queue(Double lambda, Integer seed) {
-        super(seed)
-        this.eventList = new LinkedList<>()
-        this.poissonParameter = lambda
-        this.seed = seed
-        this.previousEventTime = 0
-
-        addEvent(generateEvent())
-        addEvent(generateEvent())
-        addEvent(generateEvent())
-    }
-
-    @Override
-    Event consumeEvent() {
-        if(!eventList.isEmpty()) {
-            Event event = eventList.first()
-            this.previousEventTime = event.timeToStart
-            this.eventList.remove(0)
-            addEvent(generateEvent())
-
-            return event
-        }
-        else return null
-    }
-
-    @Override
-    Event generateEvent() {
-        def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
-        return new Event(randomTime, EventType.QUEUE)
-    }
-}
-
-class System extends EventConsumer{
-    System(Double mu, Integer seed) {
-        super(seed)
-        this.eventList = new LinkedList<>()
-        this.poissonParameter = mu
-        this.seed = seed
-        this.previousEventTime = 0
-    }
-
-    @Override
-    Event generateEvent() {
-        def randomTime =  Math.log(1.0-generator.nextDouble())/-poissonParameter
-        return new Event(randomTime, EventType.SYSTEM)
-    }
-
-    Boolean isConsuming() {
-        return this.eventList.size() > 0
-    }
-
-    Boolean isEmpty() {
-        return this.eventList.size() == 0
-    }
 
 
-}
 
-class Event implements Comparable<Event>{
-    Double timeToStart
-    EventType type
 
-    Event(Double timeToStart, EventType type) {
-        this.timeToStart = timeToStart
-        this.type = type
-    }
-
-    @Override int compareTo(Event event) {
-        if(this.timeToStart < event.timeToStart)
-            return -1
-        else if(this.timeToStart > event.timeToStart)
-            return 1
-        else return 0
-    }
-}
-
-enum EventType {
-    QUEUE, SYSTEM
-}
 
