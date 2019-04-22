@@ -33,7 +33,8 @@ abstract class EventConsumer {
     }
 
     void tickOfTheClock() {
-        this.clock += Math.log((Double) 1.0 - this.clockGenerator.nextDouble())/-this.poissonParameter
+        Double randomPoissonValue = Math.log((Double) 1.0 - this.clockGenerator.nextDouble())/-this.poissonParameter
+        this.clock += randomPoissonValue/4
     }
 
     Boolean readyToConsume() {

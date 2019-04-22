@@ -35,5 +35,9 @@ class App {
                 properties.seed as Integer
         )
         simulation.simulate()
+
+        println "Results:"
+        println "Events in system:" + simulation.eventsInSystem
+        println "Events in queue:" + simulation.eventsInQueue
     }
 }

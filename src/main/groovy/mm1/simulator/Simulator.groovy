@@ -32,7 +32,11 @@ class Simulator {
         timeInQueue = 0
     }
 
-
+    /**
+     * It simulates M/M/1 queue.
+     * Events arrive with Poisson(lambda) distribution.
+     * Events are consumed by server with Poisson(mu) distribution.
+     */
     void simulate() {
         // Single event is generated in queue constructor
         this.queue = new Queue(this.lambda, this.seed, eventsInQueue)
@@ -42,6 +46,19 @@ class Simulator {
         for (int i = 0; i < this.probes; i++) {
             log.debug "Real events in queue: " + this.queue.eventList.size() + "; Real events in system: " + this.system.eventList.size()
             log.debug "Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem
+
+            // Events arrive with Poisson(lambda) independently
+            // to simulate queue delay: if clock > timeToStart
+            if (queue.readyToArrive()) {
+                log.debug "Queue ready to consume"
+                this.eventsInQueue++
+                queue.addEvent(queue.generateEvent())
+            }
+
+            // Time passes independently
+            // Simulate time of queue and system
+            queue.tickOfTheClock()
+            system.tickOfTheClock()
 
             // Get event from queue and put to the system
             if (system.isEmpty()) {
@@ -54,15 +71,6 @@ class Simulator {
                 // Add event to system
                 this.eventsInSystem++
                 system.addEvent(eventInSystem)
-
-                // to simulate queue delay: if clock > timeToStart
-                if (queue.readyToConsume()) {
-                    log.debug "Queue ready to consume"
-                    this.eventsInQueue++
-                    queue.addEvent(queue.generateEvent())
-                }
-                // Simulate time of queue and system
-                queue.tickOfTheClock()
             }
 
             // Consume event in system if there is any event inside
@@ -73,8 +81,6 @@ class Simulator {
                     log.debug "System ready to consume"
                     consume(system.eventList.first())
                 }
-                // Simulate time of queue and system
-                system.tickOfTheClock()
             }
         }
     }

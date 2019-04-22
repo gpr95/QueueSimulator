@@ -11,11 +11,11 @@ by a Poisson process and job service times have an exponential distribution.
 
 ## Usage
 ```$xslt
-> gradle run -DlogLevel=DEBUG
+> gradle run
 ```
 
-OR
+## Configuration
 
 ```$xslt
-> gradle run
+gedit src/main/groovy/resources/logback.xml --> root.level (INFO/DEBUG etc.)
 ```

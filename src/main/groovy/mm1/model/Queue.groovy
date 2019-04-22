@@ -19,4 +19,11 @@ class Queue extends EventConsumer {
         def randomTime = Math.log(1.0 - generator.nextDouble()) / -poissonParameter
         return new Event(randomTime, EventType.QUEUE)
     }
+
+    Boolean readyToArrive() {
+        if(!this.eventList && !this.eventList.isEmpty())
+            return this.clock > this.eventList.first().timeToStart
+        else
+            return true
+    }
 }
