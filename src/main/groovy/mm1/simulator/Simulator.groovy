@@ -27,7 +27,7 @@ class Simulator {
         this.seed = seed
 
         eventsInSystem = 0
-        eventsInQueue = 3
+        eventsInQueue = 10
         timeInSystem = 0
         timeInQueue = 0
     }
@@ -35,7 +35,7 @@ class Simulator {
 
     void simulate() {
         // Single event is generated in queue constructor
-        this.queue = new Queue(this.lambda, this.seed, 10)
+        this.queue = new Queue(this.lambda, this.seed, eventsInQueue)
         // System is empty by default
         this.system = new System(this.mu, this.seed)
 
@@ -46,17 +46,23 @@ class Simulator {
             // Get event from queue and put to the system
             if (system.isEmpty()) {
                 log.debug "System is empty"
+
+                // Single event is removed from queue
+                this.eventsInQueue--
+                Event eventFromQueue = queue.pop()
+                Event eventInSystem = consume(eventFromQueue)
+                // Add event to system
+                this.eventsInSystem++
+                system.addEvent(eventInSystem)
+
                 // to simulate queue delay: if clock > timeToStart
                 if (queue.readyToConsume()) {
                     log.debug "Queue ready to consume"
-
-                    // Single event is removed from queue
-                    this.eventsInQueue--
-                    Event eventFromQueue = queue.pop()
-                    // Queue event consumption add new event to the system
-                    Event eventInSystem = consume(eventFromQueue)
-                    system.addEvent(eventInSystem)
+                    this.eventsInQueue++
+                    queue.addEvent(queue.generateEvent())
                 }
+                // Simulate time of queue and system
+                queue.tickOfTheClock()
             }
 
             // Consume event in system if there is any event inside
@@ -67,11 +73,9 @@ class Simulator {
                     log.debug "System ready to consume"
                     consume(system.eventList.first())
                 }
+                // Simulate time of queue and system
+                system.tickOfTheClock()
             }
-
-            // Simulate time of queue and system
-            queue.tickOfTheClock()
-            system.tickOfTheClock()
         }
     }
 
@@ -81,8 +85,6 @@ class Simulator {
                 if (this.eventsInSystem == 0) {
                     // Scenario when event from queue need to be added to system
                     this.queue.clock -= event.timeToStart
-                    this.eventsInQueue--
-                    this.eventsInSystem++
                     Event eventToSystem = this.system.generateEvent()
                     event = eventToSystem
                 }
