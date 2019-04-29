@@ -1,8 +1,10 @@
 package mm1.model
 
+import groovy.transform.ToString
 
 
-class System extends EventConsumer{
+@ToString(includeNames = true)
+class System extends PoissonGenerator{
 
     EventQueue eventQueue
     SystemState state = SystemState.SYSTEM_ON
@@ -50,7 +52,6 @@ class System extends EventConsumer{
 
         // Queue is empty
         if (currentEvent == null) {
-//            println(timeIdle)
             timeIdle += timePassed
             timePassed = 0
             return
@@ -62,13 +63,11 @@ class System extends EventConsumer{
             // Event processed
             currentEvent = null
             timeProcessing += remainingProcessingTime
-            remainingProcessingTime = 0
 
         } else {
             // Event partially processed
             timeProcessing += (remainingProcessingTime + timePassed)
             remainingProcessingTime = -timePassed
-//            timeProcessing += remainingProcessingTime
             timePassed = 0
         }
     }
@@ -89,20 +88,7 @@ class System extends EventConsumer{
             modifier = 1
         else
             modifier = -1
-        return configuration.d //+ modifier * generateRandomEventTime() / 1000
-    }
-
-
-    @Override
-    public String toString() {
-        return "System{" +
-                "state=" + state +
-                ", lastEventTime=" + lastEventTime +
-                ", timeProcessing=" + timeProcessing +
-                ", timeIdle=" + timeIdle +
-                ", timeOn=" + timeOn +
-                ", timeOff=" + timeOff +
-                '}';
+        return configuration.d + modifier * generateRandomEventTime() / 1000
     }
 }
 

@@ -3,6 +3,7 @@
  */
 package mm1
 
+
 import mm1.model.Configuration
 import mm1.model.EventGenerator
 import mm1.model.EventList
@@ -10,7 +11,7 @@ import mm1.model.EventType
 import mm1.simulator.Simulator
 
 class App {
-    String getGreeting() {
+    static String getGreeting() {
         return 'MM1 simulator starting...'
     }
 
@@ -26,7 +27,7 @@ class App {
     }
 
     static void main(String[] args) {
-        println new App().greeting
+        println greeting
 
         Properties properties = new App().readProperties('/user-input.properties')
 
@@ -38,27 +39,12 @@ class App {
 
         generator.generate(eventList)
 
-        println(eventList)
-        println(eventList.eventList.size())
-        println(eventList.eventList.findAll {it.type == EventType.MESSAGE}.size())
+        println(eventList.toString())
+        println(eventList.eventList.size().toString())
+        println(eventList.eventList.findAll {it.type == EventType.MESSAGE}.size().toString())
 
         Simulator simulation = new Simulator(config)
 
         simulation.simulate(eventList)
-
-        // Run MM1 simulation
-//        Simulator simulation = new Simulator(
-//                properties.lambda as Double,
-//                properties.mu as Double,
-//                properties.probes as Integer,
-//                properties.seed as Integer
-//        )
-//        simulation.simulate()
-//
-//        println "Results:"
-//        println "Events in system:" + simulation.eventsInSystem
-//        println "Events in queue:" + simulation.eventsInQueue
-
-
     }
 }

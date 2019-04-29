@@ -27,9 +27,9 @@ class EventList {
 
 
     @Override
-    public String toString() {
+    String toString() {
         return "EventList{" +
                 "eventList=\n" + eventList.join('\n') +
-                '}';
+                '}'
     }
 }

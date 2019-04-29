@@ -1,6 +1,6 @@
 package mm1.model
 
-class EventGenerator extends EventConsumer {
+class EventGenerator extends PoissonGenerator {
 
     EventGenerator(Configuration configuration) {
         super(configuration)
@@ -22,12 +22,14 @@ class EventGenerator extends EventConsumer {
 
             Event e
             if (isOn) {
-                time += configuration.econ
+
                 e = new Event(time, EventType.SERVER_OFF)
+                time += configuration.ecoff
                 isOn = false
             } else {
-                time += configuration.ecoff
+
                 e = new Event(time, EventType.SERVER_ON)
+                time += configuration.econ
                 isOn = true
             }
             eventList.put(e)

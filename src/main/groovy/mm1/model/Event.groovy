@@ -7,8 +7,8 @@ class Event implements Comparable<Event>{
     Double time
     EventType type
 
-    Event(Double timeToStart, EventType type) {
-        this.time = timeToStart
+    Event(Double time, EventType type) {
+        this.time = time
         this.type = type
     }
 

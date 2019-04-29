@@ -2,8 +2,7 @@ package mm1.model
 
 // Fifo queue
 class EventQueue {
-
-    Queue eventsInQueue
+    Queue<Event> eventsInQueue
 
     EventQueue() {
         this.eventsInQueue = new LinkedList<>()

@@ -1,5 +1,8 @@
 package mm1.model
 
+import groovy.transform.ToString
+
+@ToString(includeNames = true)
 class Configuration {
     double lambda
     double mu
@@ -23,21 +26,5 @@ class Configuration {
         this.econ = properties.econ as double
         this.ecoff = properties.ecoff as double
         this.d = properties.d as double
-    }
-
-
-    @Override
-    public String toString() {
-        return "Configuration{" +
-                "lambda=" + lambda +
-                ", mu=" + mu +
-                ", probes=" + probes +
-                ", seed=" + seed +
-                ", switching=" + switching +
-                ", simulationDuration=" + simulationDuration +
-                ", econ=" + econ +
-                ", ecoff=" + ecoff +
-                ", d=" + d +
-                '}';
     }
 }
