@@ -5,11 +5,13 @@ import mm1.model.*
 
 @Slf4j
 class Simulator {
-    Double lambda
-    Double mu
-    Integer probes
-    Integer seed
-    Queue queue
+//    Double lambda
+//    Double mu
+//    Integer probes
+//    Integer seed
+    Configuration configuration
+
+    EventQueue queue
     System system
 
     // Statistics vars
@@ -20,11 +22,8 @@ class Simulator {
     Double timeInQueue
 
 
-    Simulator(Double lambda, Double mu, Integer probes, Integer seed) {
-        this.lambda = lambda
-        this.mu = mu
-        this.probes = probes
-        this.seed = seed
+    Simulator(Configuration configuration) {
+        this.configuration = configuration
 
         eventsInSystem = 0
         eventsInQueue = 10
@@ -37,52 +36,63 @@ class Simulator {
      * Events arrive with Poisson(lambda) distribution.
      * Events are consumed by server with Poisson(mu) distribution.
      */
-    void simulate() {
+    void simulate(EventList eventList) {
         // Single event is generated in queue constructor
-        this.queue = new Queue(this.lambda, this.seed, eventsInQueue)
+        this.queue = new EventQueue()
         // System is empty by default
-        this.system = new System(this.mu, this.seed)
+        this.system = new System(this.queue, configuration)
 
-        for (int i = 0; i < this.probes; i++) {
-            log.debug "Real events in queue: " + this.queue.eventList.size() + "; Real events in system: " + this.system.eventList.size()
-            log.debug "Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem
+        while (!eventList.isEmpty()) {
+            def currentEvent = eventList.get()
 
-            // Events arrive with Poisson(lambda) independently
-            // to simulate queue delay: if clock > timeToStart
-            if (queue.readyToArrive()) {
-                log.debug "Queue ready to consume"
-                this.eventsInQueue++
-                queue.addEvent(queue.generateEvent())
-            }
+            if (currentEvent.type == EventType.MESSAGE)
+                this.queue.put(currentEvent)
 
-            // Time passes independently
-            // Simulate time of queue and system
-            queue.tickOfTheClock()
-            system.tickOfTheClock()
-
-            // Get event from queue and put to the system
-            if (system.isEmpty()) {
-                log.debug "System is empty"
-
-                // Single event is removed from queue
-                this.eventsInQueue--
-                Event eventFromQueue = queue.pop()
-                Event eventInSystem = consume(eventFromQueue)
-                // Add event to system
-                this.eventsInSystem++
-                system.addEvent(eventInSystem)
-            }
-
-            // Consume event in system if there is any event inside
-            if (system.isConsuming()) {
-                log.debug "System is consuming"
-                // if clock > timeToStart
-                if (system.readyToConsume()) {
-                    log.debug "System ready to consume"
-                    consume(system.eventList.first())
-                }
-            }
+            this.system.process(currentEvent)
         }
+
+        println(this.system)
+
+//        for (int i = 0; i < this.probes; i++) {
+//            log.debug "Real events in queue: " + this.queue.eventsInQueue.size() + "; Real events in system: " + this.system.eventsInQueue.size()
+//            log.debug "Events in queue: " + this.eventsInQueue + "; events in system: " + this.eventsInSystem
+//
+//            // Events arrive with Poisson(lambda) independently
+//            // to simulate queue delay: if clock > timeToStart
+//            if (queue.readyToArrive()) {
+//                log.debug "EventQueue ready to consume"
+//                this.eventsInQueue++
+//                queue.addEvent(queue.generateEvent())
+//            }
+//
+//            // Time passes independently
+//            // Simulate time of queue and system
+//            queue.tickOfTheClock()
+//            system.tickOfTheClock()
+//
+//            // Get event from queue and put to the system
+//            if (system.isEmpty()) {
+//                log.debug "System is empty"
+//
+//                // Single event is removed from queue
+//                this.eventsInQueue--
+//                Event eventFromQueue = queue.pop()
+//                Event eventInSystem = consume(eventFromQueue)
+//                // Add event to system
+//                this.eventsInSystem++
+//                system.addEvent(eventInSystem)
+//            }
+//
+//            // Consume event in system if there is any event inside
+//            if (system.isConsuming()) {
+//                log.debug "System is consuming"
+//                // if clock > timeToStart
+//                if (system.readyToConsume()) {
+//                    log.debug "System ready to consume"
+//                    consume(system.eventsInQueue.first())
+//                }
+//            }
+//        }
     }
 
     Event consume(Event event) {
