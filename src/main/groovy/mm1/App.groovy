@@ -3,41 +3,81 @@
  */
 package mm1
 
+import mm1.model.Configuration
+import mm1.model.EventGenerator
+import mm1.model.EventList
+import mm1.model.EventType
 import mm1.simulator.Simulator
 
 class App {
-    String getGreeting() {
+    static String getGreeting() {
         return 'MM1 simulator starting...'
     }
 
     Properties readProperties(String fileName) {
         Properties properties = new Properties()
-        File propertiesFile = new File(getClass().getResource(fileName).toURI())
-        propertiesFile.withInputStream {
+        getClass().getResource(fileName).withInputStream {
             properties.load(it)
         }
 
-        properties.each { println "$it.key -> $it.value" }
+        properties.each { println String.format("%-10s -> %-10s", it.key, it.value) }
 
         return properties
     }
 
     static void main(String[] args) {
-        println new App().greeting
-        // Read properties from main/groovy/resources/user-input.properties
+        println greeting
+
         Properties properties = new App().readProperties('/user-input.properties')
+        Configuration config = new Configuration(properties)
 
-        // Run MM1 simulation
-        Simulator simulation = new Simulator(
-                (Double) properties.lambda,
-                (Double) properties.mu,
-                properties.probes as Integer,
-                properties.seed as Integer
-        )
-        simulation.simulate()
+        // debug purpose
+        Boolean debug = true
+        if(debug) {
+            config.numOfSimulations = 1
+        }
 
-        println "Results:"
-        println "Events in system:" + simulation.eventsInSystem
-        println "Events in queue:" + simulation.eventsInQueue
+        Statistics statistics = new Statistics()
+        // run multiple simulations
+        for(int i = 0; i < config.numOfSimulations; i++) {
+            EventGenerator generator = new EventGenerator(config)
+            EventList eventList = new EventList()
+            generator.generate(eventList)
+
+            println(eventList.eventList.size().toString() + "/" +
+                    eventList.eventList.findAll {it.type == EventType.MESSAGE}.size().toString())
+
+            Simulator simulation = new Simulator(config)
+            simulation.simulate(eventList)
+            statistics.addStatistics(simulation)
+
+            // change seed
+            config.seed++
+        }
+        //TODO: warm up time
+        //TODO: events generating new events?
+        //TODO: set poisson expected value from range (for example uniform distri between 0.5-6
+        // and poisson distribution with lambda
+        //TODO: print plots
+
+    }
+}
+
+class Statistics {
+    List<Integer> eventsInSystemList = new ArrayList<>()
+    List<Integer> eventsInQueueList = new ArrayList<>()
+
+    List<Double> timeInSystemList = new ArrayList<>()
+    List<Double> timeInQueueList = new ArrayList<>()
+
+
+    List<Double> systemsList = new ArrayList<>()
+
+    void addStatistics(Simulator simulation) {
+        eventsInSystemList.add(simulation.eventsInSystem)
+        eventsInQueueList.add(simulation.eventsInQueue)
+        timeInSystemList.add(simulation.timeInSystem)
+        timeInQueueList.add(simulation.timeInQueue)
+        systemsList.add(simulation.system)
     }
 }
