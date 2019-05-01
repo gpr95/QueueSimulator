@@ -3,12 +3,15 @@
  */
 package mm1
 
+import groovy.util.logging.Slf4j
 import mm1.model.Configuration
 import mm1.model.EventGenerator
 import mm1.model.EventList
 import mm1.model.EventType
 import mm1.simulator.Simulator
+import mm1.simulator.Statistics
 
+@Slf4j
 class App {
     static String getGreeting() {
         return 'MM1 simulator starting...'
@@ -20,13 +23,11 @@ class App {
             properties.load(it)
         }
 
-        properties.each { println String.format("%-10s -> %-10s", it.key, it.value) }
-
         return properties
     }
 
     static void main(String[] args) {
-        println greeting
+        log.info greeting
 
         Properties properties = new App().readProperties('/user-input.properties')
         Configuration config = new Configuration(properties)
@@ -44,40 +45,34 @@ class App {
             EventList eventList = new EventList()
             generator.generate(eventList)
 
-            println(eventList.eventList.size().toString() + "/" +
+            log.info(eventList.eventList.size().toString() + "/" +
                     eventList.eventList.findAll {it.type == EventType.MESSAGE}.size().toString())
 
             Simulator simulation = new Simulator(config)
             simulation.simulate(eventList)
-            statistics.addStatistics(simulation)
+            statistics.addStatistics(simulation.system.eventProcessingTime, config.lambda)
 
             // change seed
             config.seed++
         }
-        //TODO: warm up time
-        //TODO: events generating new events?
-        //TODO: set poisson expected value from range (for example uniform distri between 0.5-6
-        // and poisson distribution with lambda
-        //TODO: print plots
 
-    }
-}
+        statistics.plotDemo()
 
-class Statistics {
-    List<Integer> eventsInSystemList = new ArrayList<>()
-    List<Integer> eventsInQueueList = new ArrayList<>()
+        /*
+        Task1:
+            Operate mean arrival time (lambda) between lowerValueOfArrivals and upperValueOfArrivals
+            and plot mean delay of the system E[T]
 
-    List<Double> timeInSystemList = new ArrayList<>()
-    List<Double> timeInQueueList = new ArrayList<>()
-
-
-    List<Double> systemsList = new ArrayList<>()
-
-    void addStatistics(Simulator simulation) {
-        eventsInSystemList.add(simulation.eventsInSystem)
-        eventsInQueueList.add(simulation.eventsInQueue)
-        timeInSystemList.add(simulation.timeInSystem)
-        timeInQueueList.add(simulation.timeInQueue)
-        systemsList.add(simulation.system)
+        Task2:
+            Turn on and turn off the system with probability of Poff and Pon, operate  mean arrival time (lambda)
+            between lowerValueOfArrivals and upperValueOfArrivals and plot mean delay of the system E[T].
+            Plot also theoretical values of E[T] as
+            E[T] = (lambda/(mu*Pon) + E(Coff)*Poff) / ((1 - lambda/(mu*Pon))*lambda)
+        Task3:
+            The same as Task2 but system event handling has uniform distribution between (0.1;0.15).
+        */
+        //TODO: step loop over lowerValueOfArrivals and upperValueOfArrivals, gather data in statistics
+        //TODO: change specific on off times to propability
+        //TODO: add utility to generate system mu as uniform distribution
     }
 }

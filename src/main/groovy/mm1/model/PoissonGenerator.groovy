@@ -19,4 +19,17 @@ abstract class PoissonGenerator {
 
         return uniformRandomInRange + poissonRandomWithMu
     }
+
+    double generateRandomEventWithMean(double mean) {
+        double L = Math.exp(-mean)
+        int k = 0
+        double p = 1.0
+        p = p * this.generator.nextDouble()
+        k++
+        while (p > L) {
+            p = p * this.generator.nextDouble()
+            k++
+        }
+        return k - 1
+    }
 }

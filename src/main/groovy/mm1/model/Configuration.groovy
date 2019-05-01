@@ -1,10 +1,14 @@
 package mm1.model
 
 import groovy.transform.ToString
+import groovy.util.logging.Slf4j
 
 @ToString(includeNames = true)
+@Slf4j
 class Configuration {
+    double lowerValueOfArrivals
     double lambda
+    double upperValueOfArrivals
     double mu
     int probes
     int seed
@@ -18,8 +22,15 @@ class Configuration {
     double ecoff
     double d
 
+    // Task 3 variables (only uniform distribution of this range in System
+    double lowerValueOfService
+    double upperValueOfService
+
+
     Configuration(Properties properties) {
+        this.lowerValueOfArrivals = properties.lowerValueOfArrivals as double
         this.lambda = properties.lambda as double
+        this.upperValueOfArrivals = properties.upperValueOfArrivals as double
         this.mu = properties.mu as double
         this.probes = properties.probes as int
         this.seed = properties.seed as int
@@ -29,5 +40,12 @@ class Configuration {
         this.econ = properties.econ as double
         this.ecoff = properties.ecoff as double
         this.d = properties.d as double
+
+        if(properties.lowerValueOfService)
+            this.lowerValueOfService = properties.lowerValueOfService as double
+        if(properties.upperValueOfService)
+            this.upperValueOfService = properties.upperValueOfService as double
+
+        properties.each { log.info String.format("%-10s -> %-10s", it.key, it.value) }
     }
 }

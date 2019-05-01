@@ -3,7 +3,7 @@ package mm1.model
 import groovy.transform.ToString
 
 
-@ToString(includeNames = true)
+@ToString(includeNames = true, ignoreNulls = true, excludes = "eventQueue, state")
 class System extends PoissonGenerator{
 
     EventQueue eventQueue

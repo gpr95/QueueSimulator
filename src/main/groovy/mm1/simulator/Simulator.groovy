@@ -47,7 +47,7 @@ class Simulator {
             this.system.process(currentEvent)
         }
 
-        println(this.system)
+        log.info this.system.toString()
     }
 }
 
