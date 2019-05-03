@@ -72,7 +72,8 @@ class App {
             The same as Task2 but system event handling has uniform distribution between (0.1;0.15).
         */
         //TODO: step loop over lowerValueOfArrivals and upperValueOfArrivals, gather data in statistics
-        //TODO: change specific on off times to propability
+        //DONE: change specific on off times to propability - if function generateRandomEventWithMean does what is says
+        //TODO: events generating new events + warm up time
         //TODO: add utility to generate system mu as uniform distribution
     }
 

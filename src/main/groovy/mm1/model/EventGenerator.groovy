@@ -24,12 +24,12 @@ class EventGenerator extends PoissonGenerator {
             if (isOn) {
 
                 e = new Event(time, EventType.SERVER_OFF)
-                time += configuration.ecoff
+                time += generateRandomEventWithMean(configuration.ecoff)
                 isOn = false
             } else {
 
                 e = new Event(time, EventType.SERVER_ON)
-                time += configuration.econ
+                time += generateRandomEventWithMean(configuration.econ)
                 isOn = true
             }
             eventList.put(e)
