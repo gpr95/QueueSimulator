@@ -15,4 +15,8 @@ class EventQueue {
     Event get() {
         return eventsInQueue.poll()
     }
+
+    int size() {
+        return eventsInQueue.size()
+    }
 }

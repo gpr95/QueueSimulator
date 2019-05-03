@@ -10,9 +10,8 @@ class Configuration {
     double lambda
     double upperValueOfArrivals
     double mu
-    int probes
-    int seed
 
+    int seed
     int numOfSimulations
 
     boolean switching
@@ -26,13 +25,16 @@ class Configuration {
     double lowerValueOfService
     double upperValueOfService
 
+    String outputDir
+    String templateName
+    String reportName
+
 
     Configuration(Properties properties) {
         this.lowerValueOfArrivals = properties.lowerValueOfArrivals as double
         this.lambda = properties.lambda as double
         this.upperValueOfArrivals = properties.upperValueOfArrivals as double
         this.mu = properties.mu as double
-        this.probes = properties.probes as int
         this.seed = properties.seed as int
         this.numOfSimulations = properties.numOfSimulations as int
         this.switching = properties.switching as boolean
@@ -40,6 +42,9 @@ class Configuration {
         this.econ = properties.econ as double
         this.ecoff = properties.ecoff as double
         this.d = properties.d as double
+        this.outputDir = properties.outputDir as String
+        this.templateName = properties.templateName as String
+        this.reportName = properties.reportName as String
 
         if(properties.lowerValueOfService)
             this.lowerValueOfService = properties.lowerValueOfService as double
