@@ -18,6 +18,10 @@ class Configuration {
     double ecoff
     double d
 
+    String outputDir
+    String templateName
+    String reportName
+
     Configuration(Properties properties) {
         this.lambda = properties.lambda as double
         this.mu = properties.mu as double
@@ -29,5 +33,8 @@ class Configuration {
         this.econ = properties.econ as double
         this.ecoff = properties.ecoff as double
         this.d = properties.d as double
+        this.outputDir = properties.outputDir as String
+        this.templateName = properties.templateName as String
+        this.reportName = properties.reportName as String
     }
 }

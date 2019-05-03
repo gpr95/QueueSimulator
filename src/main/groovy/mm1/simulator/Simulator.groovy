@@ -1,5 +1,6 @@
 package mm1.simulator
 
+import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Slf4j
 import mm1.model.*
 
@@ -37,17 +38,22 @@ class Simulator {
         this.queue = new EventQueue()
         // System is empty by default
         this.system = new System(this.queue, configuration)
+        // Get system starting state
+        this.system.updateSystemState()
 
         while (!eventList.isEmpty()) {
             def currentEvent = eventList.get()
-
-            if (currentEvent.type == EventType.MESSAGE)
-                this.queue.put(currentEvent)
-
+            // We can't process message that just got in, system.process before adding events to queue
             this.system.process(currentEvent)
+
+            if (currentEvent.type == EventType.MESSAGE) {
+                this.queue.put(currentEvent)
+                this.system.updateQueueStatistics()
+            }
         }
 
-        println(this.system)
+        // Get system end state
+        this.system.updateSystemState()
     }
 }
 

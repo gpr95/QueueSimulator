@@ -9,11 +9,11 @@ class System extends PoissonGenerator{
     EventQueue eventQueue
     SystemState state = SystemState.SYSTEM_ON
 
-    Event currentEvent = null
+    Event systemEvent = null
     double remainingProcessingTime = 0
 
-    double lastEventTime = 0
-    double timePassed = 0
+    double currentSystemTime = 0
+    double currentTime = 0
 
     // Statistics
     double timeProcessing = 0
@@ -21,65 +21,91 @@ class System extends PoissonGenerator{
     double timeOn = 0
     double timeOff = 0
 
+    List<Point> systemsEvents = new ArrayList<>()
+    List<Point> queueEvents = new ArrayList<>()
+    List<Point> systemState = new ArrayList<>()
+
     System(EventQueue queue, Configuration configuration) {
         super(configuration)
         this.eventQueue = queue
     }
 
     void process(Event currentEvent) {
-        timePassed = currentEvent.time - lastEventTime
+
+        currentTime = currentEvent.time
+
+        doProcessing()
+
+        switch (currentEvent.type) {
+            case EventType.SERVER_ON:
+
+//                timeOff += currentTime - currentSystemTime
+//                currentSystemTime = currentTime
+
+                state = SystemState.SYSTEM_ON
+                updateSystemState()
+                break
+            case EventType.SERVER_OFF:
+//                doProcessing()
+                state = SystemState.SYSTEM_OFF
+                updateSystemState()
+                break
+            case EventType.MESSAGE:
+//                doProcessing()
+                break
+        }
+
+        currentSystemTime = currentTime
+    }
+
+    void doProcessing() {
+
+        def timePassed = currentTime - currentSystemTime
 
         if (state == SystemState.SYSTEM_OFF) {
             timeOff += timePassed
-            finish(currentEvent)
             return
+        } else {
+            timeOn += timePassed
         }
-        timeOn += timePassed
 
-        while (timePassed > 0) {
+        while (currentSystemTime < currentTime) {
             processEvent()
         }
-
-        finish(currentEvent)
     }
 
     void processEvent() {
 
-        if (currentEvent == null) {
-            currentEvent = eventQueue.get()
+        if (systemEvent == null) {
+            systemEvent = eventQueue.get()
             remainingProcessingTime = getEventProcessingTime()
+
+            updateSystemEvents()
+            updateQueueStatistics()
         }
 
-        // Queue is empty
-        if (currentEvent == null) {
-            timeIdle += timePassed
-            timePassed = 0
+        // If after getting event from queue event still null -> queue is empty and nothing will come in this time-frame
+        if (systemEvent == null) {
+
+            timeIdle += currentTime - currentSystemTime
+
+            currentSystemTime = currentTime
+            updateSystemEvents()
             return
         }
 
-        timePassed -= remainingProcessingTime
+        currentSystemTime += remainingProcessingTime
 
-        if (timePassed > 0) {
+        if (currentSystemTime < currentTime) {
             // Event processed
-            currentEvent = null
+            systemEvent = null
             timeProcessing += remainingProcessingTime
-
         } else {
             // Event partially processed
-            timeProcessing += (remainingProcessingTime + timePassed)
-            remainingProcessingTime = -timePassed
-            timePassed = 0
+            timeProcessing += (remainingProcessingTime - (currentSystemTime - currentTime))
+            remainingProcessingTime = currentSystemTime - currentTime
+            currentSystemTime = currentTime
         }
-    }
-
-    void finish(Event currentEvent) {
-
-        if (currentEvent.type == EventType.SERVER_ON)
-            state = SystemState.SYSTEM_ON
-        else if (currentEvent.type == EventType.SERVER_OFF)
-            state = SystemState.SYSTEM_OFF
-
-        lastEventTime = currentEvent.time
     }
 
     double getEventProcessingTime() {
@@ -89,6 +115,18 @@ class System extends PoissonGenerator{
         else
             modifier = -1
         return configuration.d + modifier * generateRandomEventTime() / 1000
+    }
+
+    void updateQueueStatistics() {
+        queueEvents.add(new Point(x: currentSystemTime, y: this.eventQueue.size()))
+    }
+
+    void updateSystemState() {
+        systemState.add(new Point(x: currentSystemTime, y: -this.state.ordinal()+1))
+    }
+
+    void updateSystemEvents() {
+        systemsEvents.add(new Point(x: currentSystemTime, y: this.systemEvent == null ? 0 : 1))
     }
 }
 

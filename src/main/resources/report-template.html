@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+</head>
+<body>
+<div id="container" style="width: 100%;">
+    <canvas id="canvas"></canvas>
+</div>
+<script>
+
+    var queueEvents = ${data.queueEvents}
+    var systemsEvents = ${data.systemsEvents}
+    var systemState = ${data.systemState}
+
+    window.chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+
+    var config = {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'queueEvents',
+                borderColor: window.chartColors.red,
+                data: queueEvents,
+                fill: false,
+                steppedLine: 'before',
+            },{
+                label: 'systemsEvents',
+                borderColor: window.chartColors.blue,
+                data: systemsEvents,
+                fill: false,
+                steppedLine: 'before',
+            },{
+                label: 'systemState',
+                borderColor: window.chartColors.yellow,
+                data: systemState,
+                fill: false,
+                steppedLine: 'before',
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'linear',
+                    position: 'bottom'
+                }]
+            },
+            elements: {
+                line: {
+                    tension: 0 // disables bezier curves
+                }
+            }
+        },
+    };
+
+    window.onload = function() {
+        var ctx = document.getElementById('canvas').getContext('2d');
+        window.myBar = new Chart(ctx, config);
+
+    };
+</script>
+</body>
+</html>

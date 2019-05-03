@@ -3,11 +3,14 @@
  */
 package mm1
 
+import groovy.text.SimpleTemplateEngine
 import mm1.model.Configuration
 import mm1.model.EventGenerator
 import mm1.model.EventList
 import mm1.model.EventType
+import mm1.model.Statistics
 import mm1.simulator.Simulator
+import org.codehaus.groovy.util.StringUtil
 
 class App {
     static String getGreeting() {
@@ -32,7 +35,7 @@ class App {
         Configuration config = new Configuration(properties)
 
         // debug purpose
-        Boolean debug = true
+        Boolean debug = false
         if(debug) {
             config.numOfSimulations = 1
         }
@@ -51,6 +54,8 @@ class App {
             simulation.simulate(eventList)
             statistics.addStatistics(simulation)
 
+            generateHTMLReport(config, simulation.system, i)
+
             // change seed
             config.seed++
         }
@@ -59,25 +64,14 @@ class App {
         //TODO: set poisson expected value from range (for example uniform distri between 0.5-6
         // and poisson distribution with lambda
         //TODO: print plots
-
     }
-}
 
-class Statistics {
-    List<Integer> eventsInSystemList = new ArrayList<>()
-    List<Integer> eventsInQueueList = new ArrayList<>()
-
-    List<Double> timeInSystemList = new ArrayList<>()
-    List<Double> timeInQueueList = new ArrayList<>()
-
-
-    List<Double> systemsList = new ArrayList<>()
-
-    void addStatistics(Simulator simulation) {
-        eventsInSystemList.add(simulation.eventsInSystem)
-        eventsInQueueList.add(simulation.eventsInQueue)
-        timeInSystemList.add(simulation.timeInSystem)
-        timeInQueueList.add(simulation.timeInQueue)
-        systemsList.add(simulation.system)
+    static void generateHTMLReport(Configuration configuration, mm1.model.System system, int simulationNumber) {
+        def templateText = getClass().getResource(configuration.templateName).getText()
+        def engine = new SimpleTemplateEngine().createTemplate(templateText)
+        def template = engine.make(["title": "Report $simulationNumber", "data": system])
+        File file = new File(configuration.outputDir + File.separator + sprintf(configuration.reportName, simulationNumber))
+        file.getParentFile().mkdirs()
+        file.write(template.toString())
     }
 }
