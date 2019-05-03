@@ -36,26 +36,20 @@ class System extends PoissonGenerator{
 
         doProcessing()
 
+        currentSystemTime = currentTime
+
         switch (currentEvent.type) {
             case EventType.SERVER_ON:
-
-//                timeOff += currentTime - currentSystemTime
-//                currentSystemTime = currentTime
-
                 state = SystemState.SYSTEM_ON
                 updateSystemState()
                 break
             case EventType.SERVER_OFF:
-//                doProcessing()
                 state = SystemState.SYSTEM_OFF
                 updateSystemState()
                 break
             case EventType.MESSAGE:
-//                doProcessing()
                 break
         }
-
-        currentSystemTime = currentTime
     }
 
     void doProcessing() {

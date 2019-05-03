@@ -8,9 +8,7 @@ import mm1.model.Configuration
 import mm1.model.EventGenerator
 import mm1.model.EventList
 import mm1.model.EventType
-import mm1.model.Statistics
 import mm1.simulator.Simulator
-import org.codehaus.groovy.util.StringUtil
 
 class App {
     static String getGreeting() {
@@ -73,5 +71,20 @@ class App {
         File file = new File(configuration.outputDir + File.separator + sprintf(configuration.reportName, simulationNumber))
         file.getParentFile().mkdirs()
         file.write(template.toString())
+    }
+}
+
+class Statistics {
+    List<Integer> eventsInSystemList = new ArrayList<>()
+    List<Integer> eventsInQueueList = new ArrayList<>()
+    List<Double> timeInSystemList = new ArrayList<>()
+    List<Double> timeInQueueList = new ArrayList<>()
+    List<Double> systemsList = new ArrayList<>()
+    void addStatistics(Simulator simulation) {
+        eventsInSystemList.add(simulation.eventsInSystem)
+        eventsInQueueList.add(simulation.eventsInQueue)
+        timeInSystemList.add(simulation.timeInSystem)
+        timeInQueueList.add(simulation.timeInQueue)
+        systemsList.add(simulation.system)
     }
 }
