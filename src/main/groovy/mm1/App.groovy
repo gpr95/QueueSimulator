@@ -1,14 +1,13 @@
 package mm1
 
-import groovy.util.logging.Slf4j
 import groovy.text.SimpleTemplateEngine
+import groovy.util.logging.Slf4j
 import mm1.model.Configuration
 import mm1.model.EventGenerator
 import mm1.model.EventList
 import mm1.model.EventType
 import mm1.simulator.Simulator
 import mm1.simulator.Statistics
-import sun.plugin.dom.exception.InvalidStateException
 
 @Slf4j
 class App {
@@ -44,34 +43,40 @@ class App {
                 properties = new App().readProperties('/task2.properties')
                 break
             default:
-                throw new InvalidStateException('Choose proper task ID.')
+                throw new IllegalStateException('Choose proper task ID.')
         }
         Configuration config = new Configuration(properties)
 
 
-        Boolean debug = false
+        Boolean debug = true
         if(debug) {
             config.numOfSimulations = 1
+            config.lowerValueOfArrivals = config.upperValueOfArrivals
         }
 
         Statistics statistics = new Statistics()
         // run multiple simulations
         for(int i = 0; i < config.numOfSimulations; i++) {
-            EventGenerator generator = new EventGenerator(config)
-            EventList eventList = new EventList()
-            generator.generate(eventList)
+            // from_value.step to_value step_value {}
+            config.lowerValueOfArrivals.step config.upperValueOfArrivals, (int) (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10, {
+                // assign value to lambda
+                config.lambda = it
+                EventGenerator generator = new EventGenerator(config)
+                EventList eventList = new EventList()
+                generator.generate(eventList)
 
-            log.info(eventList.eventList.size().toString() + "/" +
-                    eventList.eventList.findAll {it.type == EventType.MESSAGE}.size().toString())
+                log.info(eventList.eventList.size().toString() + "/" +
+                        eventList.eventList.findAll { it.type == EventType.MESSAGE }.size().toString())
 
-            Simulator simulation = new Simulator(config)
-            simulation.simulate(eventList)
-            statistics.addStatistics(simulation.system.eventProcessingTime, config.lambda)
+                Simulator simulation = new Simulator(config)
+                simulation.simulate(eventList)
+                statistics.addStatistics(simulation.system.eventProcessingTime, config.lambda)
 
-            generateHTMLReport(config, simulation.system, i)
+                generateHTMLReport(config, simulation.system, i)
 
-            // change seed
-            config.seed++
+                // change seed
+                config.seed++
+            }
         }
 
         statistics.plotDemo()
