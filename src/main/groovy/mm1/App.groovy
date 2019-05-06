@@ -8,6 +8,7 @@ import mm1.model.EventList
 import mm1.model.EventType
 import mm1.simulator.Simulator
 import mm1.simulator.Statistics
+import sun.plugin.dom.exception.InvalidStateException
 
 @Slf4j
 class App {
@@ -27,10 +28,27 @@ class App {
     static void main(String[] args) {
         log.info greeting
 
-        Properties properties = new App().readProperties('/user-input.properties')
+        Properties properties
+
+
+        // Choose task to do
+        int taskID = 1
+        switch(taskID) {
+            case 1:
+                properties = new App().readProperties('/task1.properties')
+                break
+            case 2:
+                properties = new App().readProperties('/task2.properties')
+                break
+            case 3:
+                properties = new App().readProperties('/task2.properties')
+                break
+            default:
+                throw new InvalidStateException('Choose proper task ID.')
+        }
         Configuration config = new Configuration(properties)
 
-        // debug purpose
+
         Boolean debug = false
         if(debug) {
             config.numOfSimulations = 1
