@@ -27,27 +27,13 @@ class App {
     static void main(String[] args) {
         log.info greeting
 
-        Properties properties
-
-
         // Choose task to do
         int taskID = 1
-        switch(taskID) {
-            case 1:
-                properties = new App().readProperties('/task1.properties')
-                break
-            case 2:
-                properties = new App().readProperties('/task2.properties')
-                break
-            case 3:
-                properties = new App().readProperties('/task2.properties')
-                break
-            default:
-                throw new IllegalStateException('Choose proper task ID.')
-        }
+        Properties properties = new App().readProperties("/task${taskID}.properties")
         Configuration config = new Configuration(properties)
 
 
+        // Debug option
         Boolean debug = true
         if(debug) {
             config.numOfSimulations = 1
@@ -55,15 +41,12 @@ class App {
         }
 
         Statistics statistics = new Statistics()
-        // run multiple simulations
+        // Run multiple simulations
         for(int i = 0; i < config.numOfSimulations; i++) {
+            // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
             // from_value.step to_value step_value {}
-            config.lowerValueOfArrivals.step config.upperValueOfArrivals, (int) (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10, {
-                // assign value to lambda
-                config.lambda = it
-                EventGenerator generator = new EventGenerator(config)
-                EventList eventList = new EventList()
-                generator.generate(eventList)
+            config.lowerValueOfArrivals.step config.upperValueOfArrivals, (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10, {
+                EventList eventList = getEventList(config,it)
 
                 log.info(eventList.eventList.size().toString() + "/" +
                         eventList.eventList.findAll { it.type == EventType.MESSAGE }.size().toString())
@@ -94,10 +77,8 @@ class App {
         Task3:
             The same as Task2 but system event handling has uniform distribution between (0.1;0.15).
         */
-        //TODO: step loop over lowerValueOfArrivals and upperValueOfArrivals, gather data in statistics
-        //DONE: change specific on off times to propability - if function generateRandomEventWithMean does what is says
-        //TODO: events generating new events + warm up time
         //TODO: add utility to generate system mu as uniform distribution
+        //TODO: add statistics gathering during simulations, add them to plot E(T)(lambda)
     }
 
     static void generateHTMLReport(Configuration configuration, mm1.model.System system, int simulationNumber) {
@@ -107,6 +88,15 @@ class App {
         File file = new File(configuration.outputDir + File.separator + sprintf(configuration.reportName, simulationNumber))
         file.getParentFile().mkdirs()
         file.write(template.toString())
+    }
+
+    static EventList getEventList(Configuration config, Double lambda) {
+        config.lambda = lambda
+        EventGenerator generator = new EventGenerator(config)
+        EventList eventList = new EventList()
+        generator.generate(eventList)
+
+        return eventList
     }
 }
 
