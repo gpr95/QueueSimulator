@@ -34,35 +34,42 @@ class App {
 
 
         // Debug option
-        Boolean debug = true
+        Boolean debug = false
         if(debug) {
             config.numOfSimulations = 1
-            config.lowerValueOfArrivals = config.upperValueOfArrivals
         }
 
         Statistics statistics = new Statistics()
-        // Run multiple simulations
-        for(int i = 0; i < config.numOfSimulations; i++) {
-            // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
-            // from_value.step to_value step_value {}
-            config.lowerValueOfArrivals.step config.upperValueOfArrivals, (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10, {
-                EventList eventList = getEventList(config,it)
+
+        // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
+        // from_value.step to_value step_value {}
+        for(Double lambda = config.lowerValueOfArrivals; lambda < config.upperValueOfArrivals;
+            lambda += (config.upperValueOfArrivals - config.lowerValueOfArrivals)/100  ) {
+            Double meanDelaySystemTimeSum = 0.0
+            // Run multiple simulations
+            for(int i = 0; i < config.numOfSimulations; i++) {
+                EventList eventList = getEventList(config, lambda)
 
                 log.info(eventList.eventList.size().toString() + "/" +
                         eventList.eventList.findAll { it.type == EventType.MESSAGE }.size().toString())
 
+
                 Simulator simulation = new Simulator(config)
                 simulation.simulate(eventList)
-                statistics.addStatistics(simulation.system.eventProcessingTime, config.lambda)
+                meanDelaySystemTimeSum += simulation.system.timeProcessing
 
-                generateHTMLReport(config, simulation.system, i)
+
+                // generateHTMLReport(config, simulation.system, i)
 
                 // change seed
                 config.seed++
             }
+
+            statistics.addStatistics(meanDelaySystemTimeSum/config.numOfSimulations, config.lambda)
+
         }
 
-        statistics.plotDemo()
+        statistics.plot()
 
         /*
         Task1:
