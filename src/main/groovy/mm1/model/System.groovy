@@ -25,6 +25,10 @@ class System extends PoissonGenerator{
     List<Point> queueEvents = new ArrayList<>()
     List<Point> systemState = new ArrayList<>()
 
+    System() {
+        super()
+    }
+
     System(EventQueue queue, Configuration configuration) {
         super(configuration)
         this.eventQueue = queue
@@ -108,7 +112,10 @@ class System extends PoissonGenerator{
             modifier = 1
         else
             modifier = -1
-        return configuration.d + modifier * generateRandomEventTime() / 1000
+        if(configuration.lowerValueOfService && configuration.upperValueOfService)
+            return configuration.d + modifier * generateRandomEventTimeInRange(configuration.lowerValueOfService,
+                    configuration.upperValueOfService) / 100
+        return configuration.d + modifier * generateRandomEventTime() / 100
     }
 
     void updateQueueStatistics() {

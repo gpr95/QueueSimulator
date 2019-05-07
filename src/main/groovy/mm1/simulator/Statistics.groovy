@@ -16,6 +16,8 @@ class Statistics extends ApplicationFrame{
     List<Double> meanDelayInSystemList = new ArrayList<>()
     List<Double> lambdaList = new ArrayList<>()
 
+    List<Simulator> simulationsList = new ArrayList<>()
+
     Statistics(){
         super("OAST")
     }
@@ -23,6 +25,10 @@ class Statistics extends ApplicationFrame{
     void addStatistics(Double meanDelayInSystem, Double lambda) {
         meanDelayInSystemList.add(meanDelayInSystem)
         lambdaList.add(lambda)
+    }
+
+    void addSimulation(Simulator simulator) {
+        simulationsList.add(simulator)
     }
 
     void plot(){

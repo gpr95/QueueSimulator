@@ -54,7 +54,7 @@ class Simulator {
         // Get system end state
         this.system.updateSystemState()
 
-        log.info this.system.toString()
+        // log.info this.system.toString()
     }
 }
 

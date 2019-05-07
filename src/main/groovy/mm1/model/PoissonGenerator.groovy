@@ -4,6 +4,8 @@ abstract class PoissonGenerator {
     Random generator
     Configuration configuration
 
+    PoissonGenerator() {}
+
     PoissonGenerator(Configuration configuration) {
         this.generator = new Random(configuration.seed)
         this.configuration = configuration
