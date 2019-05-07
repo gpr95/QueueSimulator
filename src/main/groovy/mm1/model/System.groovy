@@ -114,8 +114,8 @@ class System extends PoissonGenerator{
             modifier = -1
         if(configuration.lowerValueOfService && configuration.upperValueOfService)
             return configuration.d + modifier * generateRandomEventTimeInRange(configuration.lowerValueOfService,
-                    configuration.upperValueOfService) / 100
-        return configuration.d + modifier * generateRandomEventTime() / 100
+                    configuration.upperValueOfService) / 1000
+        return configuration.d + modifier * generateRandomEventTime() / 1000
     }
 
     void updateQueueStatistics() {
