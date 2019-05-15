@@ -24,12 +24,12 @@ class EventGenerator extends PoissonGenerator {
             if (isOn) {
 
                 e = new Event(time, EventType.SERVER_OFF)
-                time += generateRandomEventWithMean(configuration.ecoff)
+                time += configuration.ecoff + generateRandomNumber()
                 isOn = false
             } else {
 
                 e = new Event(time, EventType.SERVER_ON)
-                time += generateRandomEventWithMean(configuration.econ)
+                time += configuration.econ + generateRandomNumber()
                 isOn = true
             }
             eventList.put(e)
@@ -37,11 +37,11 @@ class EventGenerator extends PoissonGenerator {
     }
 
     void generateMessages(EventList eventList) {
-        def time = generateRandomEventTime()
+        def time = generateRandomEventWithMean(configuration.lambda)
         while (time < configuration.simulationDuration) {
 
             eventList.put(new Event(time, EventType.MESSAGE))
-            time += generateRandomEventTime()
+            time += generateRandomEventWithMean(configuration.lambda)
         }
     }
 }

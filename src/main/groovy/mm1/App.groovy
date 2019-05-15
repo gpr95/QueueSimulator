@@ -25,7 +25,7 @@ class App {
         log.info greeting
 
         // Choose task to do
-        int taskID = 1
+        int taskID = 2
         Properties properties = new App().readProperties("/task${taskID}.properties")
         Configuration config = new Configuration(properties)
 
@@ -36,64 +36,33 @@ class App {
             config.numOfSimulations = 1
         }
 
-        Statistics statistics = new Statistics()
+        Statistics statistics = new Statistics(config)
+
 
         // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
         // from_value.step to_value step_value {}
         for(Double lambda = config.lowerValueOfArrivals; lambda < config.upperValueOfArrivals;
-            lambda += (config.upperValueOfArrivals - config.lowerValueOfArrivals)/100  ) {
+            lambda += (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10 ) {
             Double meanDelaySystemTimeSum = 0.0
 
             // Run multiple simulations
             for(int i = 0; i < config.numOfSimulations; i++) {
                 EventList eventList = getEventList(config, lambda)
 
-//                log.info(eventList.eventList.size().toString() + "/" +
-//                        eventList.eventList.findAll { it.type == EventType.MESSAGE }.size().toString())
-
-
                 Simulator simulation = new Simulator(config)
                 simulation.simulate(eventList)
-                meanDelaySystemTimeSum += simulation.system.timeProcessing
-
-
-                //
+                meanDelaySystemTimeSum += simulation.meanDelay
 
                 // change seed
-                config.seed++
+                config.setSeed(config.seed + 10)
 
-                if(i == 0) {
-                    statistics.addSimulation(simulation)
-                }
+                statistics.addSimulation(simulation)
             }
-
-            statistics.addStatistics(meanDelaySystemTimeSum/config.numOfSimulations, config.lambda)
-
+            statistics.addStatistics(-meanDelaySystemTimeSum/config.numOfSimulations, config.lambda)
+            generateHTMLReport(config, statistics.simulationsList.last().system, Math.round(lambda).toInteger())
         }
 
-//        System meanSystem = new System()
-//        for(int i = 0; i< statistics.simulationsList[0].system.systemsEvents.size(); i++) {
-//            double systemsSumx = 0.0
-//            double queuesSumx = 0.0
-//            double statesSumx = 0.0
-//            int systemsSumy = 0
-//            int queuesSumy = 0
-//            int statesSumy = 0
-//            for(simulation in statistics.simulationsList) {
-//                systemsSumx += simulation.system.systemsEvents[i].x
-//                queuesSumx += simulation.system.queueEvents[i].x
-//                statesSumx += simulation.system.systemState[i].x
-//                systemsSumy += simulation.system.systemsEvents[i].y
-//                queuesSumy += simulation.system.queueEvents[i].y
-//                statesSumy += simulation.system.systemState[i].y
-//            }
-//            int size = statistics.simulationsList.size()
-//            meanSystem.systemsEvents.add(new Point(x: systemsSumx/size, y: systemsSumy/size))
-//            meanSystem.queueEvents.add(new Point(x: queuesSumx/size, y: queuesSumy/size))
-//            meanSystem.systemState.add(new Point(x: statesSumx/size, y: statesSumy/size))
-//        }
 
-//        generateHTMLReport(config, meanSystem, taskID)
         statistics.plot()
 
         /*

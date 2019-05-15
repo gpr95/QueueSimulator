@@ -9,7 +9,6 @@ class Configuration {
     double lowerValueOfArrivals
     double lambda
     double upperValueOfArrivals
-    double mu
 
     int seed
     int numOfSimulations
@@ -34,7 +33,6 @@ class Configuration {
         this.lowerValueOfArrivals = properties.lowerValueOfArrivals as double
         this.lambda = properties.lambda as double
         this.upperValueOfArrivals = properties.upperValueOfArrivals as double
-        this.mu = properties.mu as double
         this.seed = properties.seed as int
         this.numOfSimulations = properties.numOfSimulations as int
         this.switching = properties.switching as boolean

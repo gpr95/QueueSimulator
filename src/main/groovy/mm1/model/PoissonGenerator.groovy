@@ -11,27 +11,12 @@ abstract class PoissonGenerator {
         this.configuration = configuration
     }
 
-    double generateRandomEventTime() {
-        return Math.log(1.0 - generator.nextDouble()) / -configuration.mu
-    }
-
-    double generateRandomEventTimeInRange(double min, double max) {
-        double uniformRandomInRange = min + (max - min) * generator.nextDouble()
-        double poissonRandomWithMu = Math.log(1.0 - generator.nextDouble()) / -configuration.mu
-
-        return uniformRandomInRange + poissonRandomWithMu
-    }
-
     double generateRandomEventWithMean(double mean) {
-        double L = Math.exp(-mean)
-        int k = 0
-        double p = 1.0
-        p = p * this.generator.nextDouble()
-        k++
-        while (p > L) {
-            p = p * this.generator.nextDouble()
-            k++
-        }
-        return k - 1
+        return Math.log(1 - generator.nextDouble())/(-mean)
+    }
+
+    double generateRandomNumber() {
+        int sign = generator.nextBoolean() ? 1 : -1;
+        return sign * Math.log(1 - generator.nextDouble())/(-1)/1000
     }
 }

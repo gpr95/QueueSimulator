@@ -17,6 +17,8 @@ class Simulator {
     Double timeInSystem
     Double timeInQueue
 
+    Double meanDelay
+
 
     Simulator(Configuration configuration) {
         this.configuration = configuration
@@ -51,6 +53,36 @@ class Simulator {
             }
         }
 
+        Point previousEvent
+        List<Double> arrivalTime = new ArrayList<>()
+        List<Double> resultTime = new ArrayList<>()
+        Double sum = 0.0
+        for(int i = 10; i < this.system.queueEvents.size() - 1; i++) {
+            Point currentEvent = this.system.queueEvents[i]
+            previousEvent = this.system.queueEvents[i-1]
+
+            if(currentEvent.y == previousEvent.y + 1) {
+                // Event added to queue
+                arrivalTime.add(currentEvent.x)
+            } else if(currentEvent.y == previousEvent.y - 1) {
+                if (arrivalTime.empty) {
+                    continue
+                }
+                // Get current event processing time
+                Double processingTime = 0.0
+                Point nextSystemEvent = this.system.systemsEvents.find { it.x > currentEvent.x}
+                if(nextSystemEvent != null) {
+                    processingTime = nextSystemEvent.x - currentEvent.x
+                    // Event removed from queue
+                    double queueTime = currentEvent.x - arrivalTime.last()
+                    resultTime.add(queueTime + processingTime)
+                    //println(resultTime.last())
+                    sum += queueTime + processingTime
+                }
+            }
+//
+        }
+        this.meanDelay = sum/resultTime.size()
         // Get system end state
         this.system.updateSystemState()
 
