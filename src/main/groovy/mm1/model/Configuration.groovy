@@ -14,6 +14,7 @@ class Configuration {
     int numOfSimulations
 
     boolean switching
+    boolean debug
 
     double simulationDuration
     double econ
@@ -28,6 +29,9 @@ class Configuration {
     String templateName
     String reportName
 
+    int warmUpTime
+    int task
+
 
     Configuration(Properties properties) {
         this.lowerValueOfArrivals = properties.lowerValueOfArrivals as double
@@ -35,11 +39,14 @@ class Configuration {
         this.upperValueOfArrivals = properties.upperValueOfArrivals as double
         this.seed = properties.seed as int
         this.numOfSimulations = properties.numOfSimulations as int
-        this.switching = properties.switching as boolean
+        this.switching = Boolean.parseBoolean(properties.switching as String)
+        this.debug = Boolean.parseBoolean(properties.debug as String)
         this.simulationDuration = properties.simulationDuration as double
         this.econ = properties.econ as double
         this.ecoff = properties.ecoff as double
         this.d = properties.d as double
+        this.warmUpTime = properties.warmupTime as int
+        this.task = properties.task as int
         this.outputDir = properties.outputDir as String
         this.templateName = properties.templateName as String
         this.reportName = properties.reportName as String

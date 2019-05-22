@@ -24,7 +24,7 @@ class Simulator {
         this.configuration = configuration
 
         eventsInSystem = 0
-        eventsInQueue = 10
+        eventsInQueue = 0
         timeInSystem = 0
         timeInQueue = 0
     }
@@ -53,40 +53,19 @@ class Simulator {
             }
         }
 
-        Point previousEvent
-        List<Double> arrivalTime = new ArrayList<>()
-        List<Double> resultTime = new ArrayList<>()
-        Double sum = 0.0
-        for(int i = 10; i < this.system.queueEvents.size() - 1; i++) {
-            Point currentEvent = this.system.queueEvents[i]
-            previousEvent = this.system.queueEvents[i-1]
+        def times = system.processedEvents.collect { it.outTime - it.time}
+        times = times.subList(configuration.warmUpTime, times.size())
+        this.meanDelay = times.sum()/times.size()
 
-            if(currentEvent.y == previousEvent.y + 1) {
-                // Event added to queue
-                arrivalTime.add(currentEvent.x)
-            } else if(currentEvent.y == previousEvent.y - 1) {
-                if (arrivalTime.empty) {
-                    continue
-                }
-                // Get current event processing time
-                Double processingTime = 0.0
-                Point nextSystemEvent = this.system.systemsEvents.find { it.x > currentEvent.x}
-                if(nextSystemEvent != null) {
-                    processingTime = nextSystemEvent.x - currentEvent.x
-                    // Event removed from queue
-                    double queueTime = currentEvent.x - arrivalTime.last()
-                    resultTime.add(queueTime + processingTime)
-                    //println(resultTime.last())
-                    sum += queueTime + processingTime
-                }
-            }
-//
+        if (configuration.debug) {
+            println("START =============== ")
+            this.system.processedEvents.each { println(it.outTime - it.time)}
+            println("STOP =============== " + this.meanDelay )
+            println("P OFF =============== " + system.timeOff / (system.timeOff + system.timeOn) )
         }
-        this.meanDelay = sum/resultTime.size()
+
         // Get system end state
         this.system.updateSystemState()
-
-        // log.info this.system.toString()
     }
 }
 

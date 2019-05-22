@@ -25,6 +25,8 @@ class System extends PoissonGenerator{
     List<Point> queueEvents = new ArrayList<>()
     List<Point> systemState = new ArrayList<>()
 
+    LinkedList<Event> processedEvents = new LinkedList<Event>()
+
     System(EventQueue queue, Configuration configuration) {
         super(configuration)
         this.eventQueue = queue
@@ -72,7 +74,8 @@ class System extends PoissonGenerator{
 
         if (systemEvent == null) {
             systemEvent = eventQueue.get()
-            remainingProcessingTime = getEventProcessingTime()
+            if (systemEvent != null)
+                remainingProcessingTime = systemEvent.processingTime
 
             updateSystemEvents()
             updateQueueStatistics()
@@ -92,6 +95,8 @@ class System extends PoissonGenerator{
 
         if (currentSystemTime < currentTime) {
             // Event processed
+            systemEvent.outTime = currentSystemTime
+            processedEvents.add(systemEvent)
             systemEvent = null
             timeProcessing += remainingProcessingTime
         } else {
@@ -100,14 +105,6 @@ class System extends PoissonGenerator{
             remainingProcessingTime = currentSystemTime - currentTime
             currentSystemTime = currentTime
         }
-    }
-
-    double getEventProcessingTime() {
-        if(configuration.lowerValueOfService && configuration.upperValueOfService) {
-            return configuration.lowerValueOfService +
-                    (configuration.upperValueOfService - configuration.lowerValueOfService) * generator.nextDouble()
-        }
-        return configuration.d + generateRandomNumber()
     }
 
     void updateQueueStatistics() {

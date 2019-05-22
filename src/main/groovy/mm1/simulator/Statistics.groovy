@@ -44,16 +44,14 @@ class Statistics extends ApplicationFrame{
         final XYSeries series2 = new XYSeries("Theory")
         for(int i = 0; i < meanDelayInSystemList.size(); i++) {
             double lambda = lambdaList.get(i)
-            double mu = 0.125
-            if(configuration.lowerValueOfService && configuration.upperValueOfService) {
-                mu = configuration.lowerValueOfService +
-                        (configuration.upperValueOfService - configuration.lowerValueOfService) * new Random().nextDouble()
-            }
-            double pOn = 0.5
-            double pOff = 0.5
+
+            double mi = 1 / configuration.d
+            double pOn = configuration.switching ? configuration.econ / ( configuration.econ + configuration.ecoff ) : 1
+            double pOff = configuration.switching ? configuration.ecoff / ( configuration.econ + configuration.ecoff ) : 0
             double ecoff = configuration.ecoff
             // E[T] = (lambda/(mu*Pon) + E(Coff)*Poff) / ((1 - lambda/(mu*Pon))*lambda)
-            double value = (lambda/(mu* pOn) + ecoff * pOff) / ((1 - lambda/(mu*pOn))*lambda)
+            double ro = lambda / (mi * pOn)
+            double value = (ro + lambda * ecoff * pOff) / ((1 - ro) * lambda)
             if (value < 1000)
                 series2.add(lambda, value)
         }

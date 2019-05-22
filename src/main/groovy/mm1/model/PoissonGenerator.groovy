@@ -15,8 +15,7 @@ abstract class PoissonGenerator {
         return Math.log(1 - generator.nextDouble())/(-mean)
     }
 
-    double generateRandomNumber() {
-        int sign = generator.nextBoolean() ? 1 : -1;
-        return sign * Math.log(1 - generator.nextDouble())/(-1)/1000
+    double generateRandomEventLinearWithOffset() {
+        return generator.nextDouble() * (configuration.upperValueOfService - configuration.lowerValueOfService) + configuration.lowerValueOfService
     }
 }

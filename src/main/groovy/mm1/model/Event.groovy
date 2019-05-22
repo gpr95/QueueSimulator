@@ -6,10 +6,13 @@ import groovy.transform.ToString
 class Event implements Comparable<Event>{
     Double time
     EventType type
+    Double outTime
+    Double processingTime
 
-    Event(Double time, EventType type) {
+    Event(Double time, EventType type, processingTime=0) {
         this.time = time
         this.type = type
+        this.processingTime = processingTime
     }
 
     @Override int compareTo(Event event) {

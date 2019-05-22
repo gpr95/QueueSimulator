@@ -21,18 +21,34 @@ class App {
         return properties
     }
 
+    /**
+     * Task1:
+     *     Operate mean arrival time (lambda) between lowerValueOfArrivals and upperValueOfArrivals
+     *     and plot mean delay of the system E[T]
+     *
+     * Task2:
+     *     Turn on and turn off the system with probability of Poff and Pon, operate  mean arrival time (lambda)
+     *     between lowerValueOfArrivals and upperValueOfArrivals and plot mean delay of the system E[T].
+     *     Plot also theoretical values of E[T] as
+     *     E[T] = (lambda/(mu*Pon) + E(Coff)*Poff) / ((1 - lambda/(mu*Pon))*lambda)
+     * Task3:
+     *     The same as Task2 but system event handling has uniform distribution between (0.1;0.15).
+     */
+
     static void main(String[] args) {
         log.info greeting
 
         // Choose task to do
-        int taskID = 2
-        Properties properties = new App().readProperties("/task${taskID}.properties")
+        int taskID = 1
+        def props = "/task${taskID}.properties"
+        Properties properties = new App().readProperties(props)
         Configuration config = new Configuration(properties)
 
 
         // Debug option
         Boolean debug = false
         if(debug) {
+            config.debug = debug
             config.numOfSimulations = 1
         }
 
@@ -40,9 +56,7 @@ class App {
 
 
         // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
-        // from_value.step to_value step_value {}
-        for(Double lambda = config.lowerValueOfArrivals; lambda < config.upperValueOfArrivals;
-            lambda += (config.upperValueOfArrivals - config.lowerValueOfArrivals)/10 ) {
+        for(Double lambda = config.lowerValueOfArrivals; lambda <= config.upperValueOfArrivals; lambda += 0.5) {
             Double meanDelaySystemTimeSum = 0.0
 
             // Run multiple simulations
@@ -57,30 +71,17 @@ class App {
                 config.setSeed(config.seed + 10)
 
                 statistics.addSimulation(simulation)
+                println("Lambda: " + lambda)
+                println("Sim no: " + i)
+                println(simulation.meanDelay)
             }
-            statistics.addStatistics(-meanDelaySystemTimeSum/config.numOfSimulations, config.lambda)
-            generateHTMLReport(config, statistics.simulationsList.last().system, Math.round(lambda).toInteger())
+            statistics.addStatistics(meanDelaySystemTimeSum/(config.numOfSimulations), lambda)
+            generateHTMLReport(config, statistics.simulationsList.last().system, lambda.toFloat())
         }
-
-
         statistics.plot()
-
-        /*
-        Task1:
-            Operate mean arrival time (lambda) between lowerValueOfArrivals and upperValueOfArrivals
-            and plot mean delay of the system E[T]
-
-        Task2:
-            Turn on and turn off the system with probability of Poff and Pon, operate  mean arrival time (lambda)
-            between lowerValueOfArrivals and upperValueOfArrivals and plot mean delay of the system E[T].
-            Plot also theoretical values of E[T] as
-            E[T] = (lambda/(mu*Pon) + E(Coff)*Poff) / ((1 - lambda/(mu*Pon))*lambda)
-        Task3:
-            The same as Task2 but system event handling has uniform distribution between (0.1;0.15).
-        */
     }
 
-    static void generateHTMLReport(Configuration configuration, System system, int simulationNumber) {
+    static void generateHTMLReport(Configuration configuration, System system, float simulationNumber) {
         def templateText = getClass().getResource(configuration.templateName).getText()
         def engine = new SimpleTemplateEngine().createTemplate(templateText)
         def template = engine.make(["title": "Report $simulationNumber", "data": system])
