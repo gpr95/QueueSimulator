@@ -8,9 +8,10 @@ class EventGenerator extends PoissonGenerator {
 
     void generate(EventList eventList) {
 
+        generateMessages(eventList)
         if (configuration.switching)
             generateSwitchingEvents(eventList)
-        generateMessages(eventList)
+
 
         eventList.put(new Event(configuration.simulationDuration, EventType.END))
     }
@@ -38,6 +39,20 @@ class EventGenerator extends PoissonGenerator {
 
     void generateMessages(EventList eventList) {
         def time = getMessageTimeGenerator()
+        if (configuration.numberOfMessages) {
+            def numberOfMessages = configuration.numberOfMessages
+            while (numberOfMessages--) {
+
+                if (configuration.task == 3) {
+                    eventList.putFast(new Event(time, EventType.MESSAGE, generateRandomEventLinearWithOffset()))
+                } else {
+                    eventList.putFast(new Event(time, EventType.MESSAGE, generateRandomEventWithMean(1/configuration.d)))
+                }
+
+                time += getMessageTimeGenerator()
+            }
+            return
+        }
         while (time < configuration.simulationDuration) {
 
             if (configuration.task == 3) {

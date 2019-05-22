@@ -17,6 +17,10 @@ class EventList {
             eventList << event
     }
 
+    def putFast(Event event) {
+        eventList << event
+    }
+
     def get() {
         return eventList.poll()
     }

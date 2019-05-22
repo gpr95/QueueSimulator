@@ -32,6 +32,7 @@ class Configuration {
     int warmUpTime
     int task
 
+    long numberOfMessages
 
     Configuration(Properties properties) {
         this.lowerValueOfArrivals = properties.lowerValueOfArrivals as double
@@ -51,6 +52,8 @@ class Configuration {
         this.templateName = properties.templateName as String
         this.reportName = properties.reportName as String
 
+        if(properties.numberOfMessages)
+            this.numberOfMessages = properties.numberOfMessages as long
         if(properties.lowerValueOfService)
             this.lowerValueOfService = properties.lowerValueOfService as double
         if(properties.upperValueOfService)
