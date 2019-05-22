@@ -45,7 +45,12 @@ class Statistics extends ApplicationFrame{
         for(int i = 0; i < meanDelayInSystemList.size(); i++) {
             double lambda = lambdaList.get(i)
 
-            double mi = 1 / configuration.d
+            double mi
+            if (configuration.task == 3) {
+                mi = 1/((configuration.upperValueOfService + configuration.lowerValueOfService)/2)
+            } else {
+                mi = 1 / configuration.d
+            }
             double pOn = configuration.switching ? configuration.econ / ( configuration.econ + configuration.ecoff ) : 1
             double pOff = configuration.switching ? configuration.ecoff / ( configuration.econ + configuration.ecoff ) : 0
             double ecoff = configuration.ecoff

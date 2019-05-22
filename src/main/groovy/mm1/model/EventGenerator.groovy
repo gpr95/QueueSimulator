@@ -56,7 +56,7 @@ class EventGenerator extends PoissonGenerator {
         while (time < configuration.simulationDuration) {
 
             if (configuration.task == 3) {
-                eventList.put(new Event(time, EventType.MESSAGE, generateRandomEventLinearWithOffset()))
+                eventList.put(new Event(time, EventType.MESSAGE, generateRandomEventWithMean(1/generateRandomEventLinearWithOffset())))
             } else {
                 eventList.put(new Event(time, EventType.MESSAGE, generateRandomEventWithMean(1/configuration.d)))
             }

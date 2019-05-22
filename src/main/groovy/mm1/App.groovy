@@ -39,7 +39,7 @@ class App {
         log.info greeting
 
         // Choose task to do
-        int taskID = 1
+        int taskID = 3
         def props = "/task${taskID}.properties"
         Properties properties = new App().readProperties(props)
         Configuration config = new Configuration(properties)
