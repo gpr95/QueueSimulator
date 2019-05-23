@@ -56,7 +56,7 @@ class App {
 
 
         // Run multiple lambda values in range <lowerValueOfArrivals, upperValueOfArrivals>
-        for(Double lambda = config.lowerValueOfArrivals; lambda <= config.upperValueOfArrivals; lambda += 0.5) {
+        for(Double lambda = config.lowerValueOfArrivals; lambda <= config.upperValueOfArrivals; lambda += 0.25) {
             Double meanDelaySystemTimeSum = 0.0
 
             // Run multiple simulations
